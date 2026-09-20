@@ -1,4 +1,4 @@
-# Synthora Paper Digest Agent v2
+# Synthora  Agent v2
 
 > **An agentic AI system that reads arXiv papers so you don't have to.**
 > Fetches, parses, summarizes, compares, and answers questions — all running locally with zero API costs.
