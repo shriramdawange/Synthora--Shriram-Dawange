@@ -1,4 +1,4 @@
-"""AgentState: TypedDict defining data flow between all 7 nodes."""
+"""AgentState: TypedDict defining data flow between all nodes."""
 
 from typing import TypedDict, Optional, Literal
 from pydantic import BaseModel
@@ -26,8 +26,9 @@ class QAExchange(BaseModel):
 
 class AgentState(TypedDict):
     user_input: str
-    query_type: Literal["arxiv_id", "topic_search", "invalid"]
+    query_type: Literal["arxiv_id", "topic_search", "compare", "synthesize", "invalid"]
     arxiv_id: Optional[str]
+    compare_ids: list[str]
     search_results: list[dict]
     selected_paper: Optional[dict]
     raw_pdf_text: str
@@ -36,4 +37,9 @@ class AgentState(TypedDict):
     vector_store_path: Optional[str]
     briefing: Optional[PaperBriefing]
     conversation_history: list[QAExchange]
+    author_info: list[dict]
+    recommendations: list[dict]
+    comparison_papers: list[dict]
+    comparison_result: Optional[dict]
+    synthesis: Optional[dict]
     error: Optional[str]

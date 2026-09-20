@@ -1,4 +1,4 @@
-"""LangGraph state graph: wire all 7 nodes into an acyclic pipeline."""
+"""LangGraph state graph: wire all nodes into the pipeline."""
 
 from langgraph.graph import StateGraph, END
 
@@ -10,11 +10,20 @@ from src.nodes.fetch_parse_pdf import fetch_parse_pdf_node
 from src.nodes.chunk_embed import chunk_embed_node
 from src.nodes.summarize import summarize_node
 from src.nodes.qa_loop import qa_node
+from src.nodes.compare_papers import compare_papers_node
+from src.nodes.author_tracking import author_tracking_node
+from src.nodes.recommendations import recommend_papers_node
+from src.nodes.synthesis import synthesize_papers_node
 
 
 def _route_after_query(state: AgentState) -> str:
     if state.get("error"):
         return "end"
+    qt = state.get("query_type", "")
+    if qt == "compare":
+        return "compare"
+    if qt == "synthesize":
+        return "synthesize"
     return "retrieve"
 
 
@@ -33,10 +42,6 @@ def _route_after_selection(state: AgentState) -> str:
     return "fetch_pdf"
 
 
-def _should_continue_qa(state: AgentState) -> str:
-    return END
-
-
 def build_graph() -> StateGraph:
     graph = StateGraph(AgentState)
 
@@ -47,6 +52,10 @@ def build_graph() -> StateGraph:
     graph.add_node("chunk_embed", chunk_embed_node)
     graph.add_node("summarize", summarize_node)
     graph.add_node("qa_loop", qa_node)
+    graph.add_node("compare_papers", compare_papers_node)
+    graph.add_node("author_tracking", author_tracking_node)
+    graph.add_node("recommendations", recommend_papers_node)
+    graph.add_node("synthesize_papers", synthesize_papers_node)
 
     graph.set_entry_point("query_understanding")
 
@@ -55,6 +64,8 @@ def build_graph() -> StateGraph:
         _route_after_query,
         {
             "retrieve": "arxiv_retrieval",
+            "compare": "compare_papers",
+            "synthesize": "synthesize_papers",
             "end": END,
         },
     )
@@ -80,12 +91,12 @@ def build_graph() -> StateGraph:
 
     graph.add_edge("fetch_parse_pdf", "chunk_embed")
     graph.add_edge("chunk_embed", "summarize")
-    graph.add_edge("summarize", "qa_loop")
+    graph.add_edge("summarize", "author_tracking")
+    graph.add_edge("author_tracking", "recommendations")
+    graph.add_edge("recommendations", "qa_loop")
+    graph.add_edge("compare_papers", END)
+    graph.add_edge("synthesize_papers", END)
 
-    graph.add_conditional_edges(
-        "qa_loop",
-        _should_continue_qa,
-        {END: END},
-    )
+    graph.add_edge("qa_loop", END)
 
     return graph.compile()

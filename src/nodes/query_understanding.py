@@ -9,6 +9,17 @@ ARXIV_ID_PATTERN = re.compile(r"^\d{4}\.\d{4,5}(v\d+)?$")
 
 def query_understanding_node(state: AgentState) -> dict:
     user_input = state["user_input"].strip()
+    lower = user_input.lower()
+
+    if lower.startswith("compare ") or lower.startswith("vs "):
+        ids = re.findall(r"\d{4}\.\d{4,5}", user_input)
+        if len(ids) >= 2:
+            return {"query_type": "compare", "compare_ids": ids[:2]}
+        return {"query_type": "invalid", "error": "Need two arXiv IDs to compare."}
+
+    if lower.startswith("synthesize ") or lower.startswith("summary "):
+        topic = user_input.split(None, 1)[1] if len(user_input.split()) > 1 else ""
+        return {"query_type": "synthesize", "user_input": topic}
 
     if ARXIV_ID_PATTERN.match(user_input):
         return {"query_type": "arxiv_id", "arxiv_id": user_input}
