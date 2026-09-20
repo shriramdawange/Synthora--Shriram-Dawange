@@ -251,42 +251,135 @@ arXiv----Shriram-Dawange/
 
 ---
 
-## Setup
+## Installation & Setup Guide
 
-### Prerequisites
+### Step 1: Install Python 3.10+
 
-- Python 3.10+
-- Ollama installed (https://ollama.com)
-- A model pulled: `ollama pull qwen2.5-coder:3b-instruct-q4_K_M`
-
-### Installation
+Download from: https://www.python.org/downloads/
 
 ```bash
-# 1. Clone the repository
+# Verify installation
+python --version
+# Should show: Python 3.10.x or higher
+```
+
+### Step 2: Install Ollama (Local LLM Engine)
+
+Download from: https://ollama.com/download
+
+```bash
+# After installation, verify Ollama is running
+ollama --version
+
+# Pull the required model (1.9 GB download)
+ollama pull qwen2.5-coder:3b-instruct-q4_K_M
+
+# Verify model is installed
+ollama list
+# Should show: qwen2.5-coder:3b-instruct-q4_K_M
+```
+
+### Step 3: Clone the Repository
+
+```bash
 git clone https://github.com/shriramdawange/arXiv----Shriram-Dawange.git
 cd arXiv----Shriram-Dawange
+```
 
-# 2. Create virtual environment
+### Step 4: Create Virtual Environment
+
+```bash
+# Windows
 python -m venv venv
-venv\Scripts\activate          # Windows
-# source venv/bin/activate     # Linux/Mac
+venv\Scripts\activate
 
-# 3. Install dependencies
+# Linux/Mac
+python3 -m venv venv
+source venv/bin/activate
+
+# Verify activation - you should see (venv) in your terminal
+```
+
+### Step 5: Install Dependencies
+
+```bash
+# Make sure you're in the project directory with venv activated
 pip install -r requirements.txt
 
-# 4. Run (no API key needed!)
+# This installs:
+# - langgraph, langchain, langchain-core, langchain-community
+# - langchain-ollama, langchain-groq
+# - arxiv, PyPDF2, chromadb, sentence-transformers
+# - pydantic, requests
+```
+
+### Step 6: Verify Ollama is Running
+
+```bash
+# Start Ollama (if not already running)
+ollama serve
+
+# In a new terminal, test the connection
+python -c "from langchain_ollama import OllamaLLM; print(OllamaLLM(model='qwen2.5-coder:3b-instruct-q4_K_M').invoke('Say hello'))"
+```
+
+### Step 7: Run the Agent
+
+```bash
+# Make sure:
+# 1. Ollama is running (ollama serve)
+# 2. Virtual environment is activated
+# 3. You're in the project directory
+
 python src/main.py
 ```
 
-### Optional: Groq Fallback
+---
 
-If you want a cloud fallback when Ollama is offline:
+### Optional: Groq Cloud Fallback
+
+If you want a backup LLM when Ollama is offline:
+
+1. Go to https://console.groq.com
+2. Sign up for free
+3. Create an API key
+4. Set it in your terminal:
 
 ```bash
-# Get free API key from https://console.groq.com
-set GROQ_API_KEY=gsk_...        # Windows PowerShell
-# export GROQ_API_KEY=gsk_...   # Linux/Mac
+# Windows PowerShell
+$env:GROQ_API_KEY="gsk_your_key_here"
+
+# Windows Command Prompt
+set GROQ_API_KEY=gsk_your_key_here
+
+# Linux/Mac
+export GROQ_API_KEY="gsk_your_key_here"
 ```
+
+---
+
+### Troubleshooting
+
+| Problem | Solution |
+|---------|----------|
+| `ollama: command not found` | Restart terminal after installing Ollama |
+| `Connection refused` on localhost:11434 | Run `ollama serve` in a separate terminal |
+| `ModuleNotFoundError` | Make sure venv is activated: `venv\Scripts\activate` |
+| `pip install` fails | Upgrade pip: `pip install --upgrade pip` |
+| Model not found | Pull model: `ollama pull qwen2.5-coder:3b-instruct-q4_K_M` |
+| `No LLM available` | Start Ollama: `ollama serve` |
+
+---
+
+### System Requirements
+
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| Python | 3.10+ | 3.11+ |
+| RAM | 4 GB | 8 GB+ |
+| Disk | 5 GB free | 10 GB+ (for model) |
+| GPU | None (CPU works) | Any CUDA GPU |
+| Internet | Required for setup | Not needed after setup |
 
 ---
 
